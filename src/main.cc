@@ -1,26 +1,25 @@
 #include <iostream>
+#include <fstream>
 #include <cstring>
-#include <cstdio>
 #include <unistd.h>
-#include <fcntl.h>
 #include <limits.h>
 
-#define CONFIG "/.config/snippet"
+#ifndef WINDOWS
+    #define CONFIG "/.config/snippet" // TODO: Make this a real config location
+    #define WIN true
+#else
+    #define CONFIG "/.config/snippet"
+    #define WIN false
+#endif
 
 void copy(std::string file, std::string deststr) {
-    char buf[BUFSIZ];
-    size_t size = 0;
+    std::ifstream source(file, std::ios::binary);
+    std::ofstream dest(deststr, std::ios::binary);
 
-    int source = open(file.c_str(), O_RDONLY, 0);
-    int dest = open(deststr.c_str(), O_WRONLY | O_CREAT, 0655);
+    dest << source.rdbuf();
 
-    while ((size == read(source, buf, BUFSIZ)) > 0) {
-        std::cout << "a" << std::endl;
-        write(dest, buf, size);
-    }
-
-    close(source);
-    close(dest);
+    source.close();
+    dest.close();
 }
 
 int main(int argc, char *argv[]) {
