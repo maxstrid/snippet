@@ -5,7 +5,7 @@ SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
 TEMPLATE_DIR :=	templates
-CONFIG_DIR 	:= ~/.config/snippet/
+CONFIG_DIR := ~/.config/snippet/
 
 EXE		:= $(BIN_DIR)/snippet
 
@@ -20,10 +20,6 @@ all: $(EXE)
 
 install: $(EXE)
 	mv $(EXE) ~/.local/bin/
-
-run: $(EXE)
-	$(info running ./bin/main)
-	@./bin/main
 
 debug: $(EXE)
 	$(info running ./bin/main through valgrind)

@@ -3,14 +3,11 @@
 #include <cstring>
 #include <unistd.h>
 #include <limits.h>
+#include <vector>
 
-#ifndef WINDOWS
-    #define CONFIG "/.config/snippet" // TODO: Make this a real config location
-    #define WIN true
-#else
-    #define CONFIG "/.config/snippet"
-    #define WIN false
-#endif
+#include "config.h"
+
+#define CONFIG "/.config/snippet"
 
 void copy(std::string file, std::string deststr) {
     std::ifstream source(file, std::ios::binary);
@@ -52,5 +49,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+
+    std::vector<std::string> config = read_config("example.conf");
+
+    for(const std::string &str: config) {
+        std::cout << str << '\n';
+    }
     return 0;
 }
