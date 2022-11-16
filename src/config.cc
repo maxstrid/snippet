@@ -1,13 +1,12 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <vector>
+#include <map>
 
 #include "config.h"
 
-std::vector<std::pair<std::string, std::string>>
-read_config(std::string filename) {
-  std::vector<std::pair<std::string, std::string>> line_vec;
+std::map<std::string, std::string> read_config(std::string filename) {
+  std::map<std::string, std::string> conf_map;
 
   std::ifstream file(filename, std::ios::binary);
 
@@ -19,18 +18,22 @@ read_config(std::string filename) {
 
   while (std::getline(file, file_str)) {
     if (file_str[0] != '#' && !file_str.empty()) {
-      std::string first = file_str.substr(0, file_str.find(' '));
-      std::string second = file_str.substr(first.size(), file_str.find(' '));
+      std::string second = file_str.substr(0, file_str.find(' '));
+      std::string first = file_str.substr(second.size(), file_str.find(' '));
 
-      second.erase(std::remove_if(second.begin(), second.end(), isspace),
-                   second.end());
+      first.erase(std::remove_if(first.begin(), first.end(), isspace),
+                   first.end());
+
+      for (int i = 0; i < first.size(); i++) {
+        first[i] = tolower(first[i]);
+      }
 
       std::pair<std::string, std::string> pr(first, second);
-      line_vec.push_back(pr);
+      conf_map.insert(pr);
     }
   }
 
   file.close();
 
-  return line_vec;
+  return conf_map;
 }

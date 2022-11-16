@@ -54,5 +54,6 @@ int main(int argc, char *argv[]) {
   for (auto pair : config) {
     std::cout << pair.first << " : " << pair.second << '\n';
   }
+  
   return 0;
 }
