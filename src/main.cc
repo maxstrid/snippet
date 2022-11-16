@@ -50,10 +50,10 @@ int main(int argc, char *argv[]) {
     }
 
 
-    std::vector<std::string> config = read_config("example.conf");
+    auto config = read_config("example.conf");
 
-    for(const std::string &str: config) {
-        std::cout << str << '\n';
+    for(auto pair: config) {
+        std::cout << pair.first << " : " << pair.second << '\n';
     }
     return 0;
 }

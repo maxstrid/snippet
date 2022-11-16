@@ -5,6 +5,6 @@
 #include <vector>
 
 // Vector only needed because size can't be known at compile time
-std::vector<std::string> read_config(std::string filename);
+std::vector<std::pair<std::string, std::string>> read_config(std::string filename);
 
 #endif // CONFIG_H_
