@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "config.h"
+#include "toml.h"
 
 #define CONFIG "/.config/snippet"
 
@@ -20,6 +21,11 @@ void copy(std::string file, std::string deststr) {
 }
 
 int main(int argc, char *argv[]) {
+  auto conf = toml::read("config.toml");
+
+  for (auto pair: conf) {
+    std::cout << pair.first << " : " << pair.second << '\n';
+  }
   std::string home_var = std::getenv("HOME");
 
   if (home_var.empty()) {
@@ -49,11 +55,5 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  auto config = read_config("example.conf");
-
-  for (auto pair : config) {
-    std::cout << pair.first << " : " << pair.second << '\n';
-  }
-  
   return 0;
 }

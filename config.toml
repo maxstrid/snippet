@@ -1,0 +1,5 @@
+[snippets]
+name1 = "/fake/file/path" # Inline comment
+name2 = "/fake/file/path/2"
+
+# Non inline comment
