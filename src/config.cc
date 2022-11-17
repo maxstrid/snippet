@@ -22,7 +22,7 @@ std::map<std::string, std::string> read_config(std::string filename) {
       std::string first = file_str.substr(second.size(), file_str.find(' '));
 
       first.erase(std::remove_if(first.begin(), first.end(), isspace),
-                   first.end());
+                  first.end());
 
       for (int i = 0; i < first.size(); i++) {
         first[i] = tolower(first[i]);

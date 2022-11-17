@@ -23,7 +23,7 @@ void copy(std::string file, std::string deststr) {
 int main(int argc, char *argv[]) {
   auto conf = toml::read("config.toml");
 
-  for (auto pair: conf) {
+  for (auto pair : conf) {
     std::cout << pair.first << " : " << pair.second << '\n';
   }
   std::string home_var = std::getenv("HOME");

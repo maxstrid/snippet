@@ -5,9 +5,9 @@
 #include <map>
 
 namespace toml {
-    std::map<std::string, std::string> read(const std::string filename);
+std::map<std::string, std::string> read(const std::string filename);
 
-    void parse(std::map<std::string, std::string> &toml);
-}
+void parse(std::map<std::string, std::string> &toml);
+} // namespace toml
 
 #endif // TOML_H_
