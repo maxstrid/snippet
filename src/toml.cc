@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+//#include <stringstream>
 #include <filesystem>
 #include <map>
 
@@ -22,11 +23,23 @@ namespace toml {
         }
 
         std::string file_str;
+        std::string split;
+        int count = 0;
 
         while(std::getline(file, file_str)) {
             if (file_str[0] != '#' && !file_str.empty() && file_str[0] != '[') {
-                std::string key = file_str.substr(0, file_str.find('='));
-                std::string value = file_str.substr(0, file_str.find('='));
+                std::stringstream file_stream(file_str);
+                std::string key, value;
+
+                count = 0;
+                while (std::getline(file_stream, split, '=')) {
+                    if(count) {
+                        value = split;
+                    } else {
+                        key = split;
+                    }
+                    count++;
+                }
 
                 std::pair<std::string, std::string> pr(key, value);
                 config_map.insert(pr);
