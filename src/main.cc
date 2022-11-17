@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <vector>
 
-#include "config.h"
 #include "toml.h"
 
 #define CONFIG "/.config/snippet"
