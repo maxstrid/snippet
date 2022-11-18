@@ -83,8 +83,9 @@ Config read(const std::string filename) {
     trim(key, '\'');
     trim(key, '\"');
     // Remove whitespace
-    trim(key, ' ');
-    trim(value, ' ');
+    key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
+    value.erase(std::remove_if(value.begin(), value.end(), isspace),
+                value.end());
 
     if (config_type == SNIPPET_GROUPS) {
       if (value.find('[') != std::string::npos) {

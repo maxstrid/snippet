@@ -22,7 +22,7 @@ void copy(std::string file, std::string deststr) {
 }
 
 int main(int argc, char *argv[]) {
-  auto conf = toml::read("config.toml");
+  auto conf = toml::read("/home/uid/.config/snippet/config.toml");
 
   if (conf.snippets.has_value()) {
     auto snips = conf.snippets.value();
@@ -64,10 +64,22 @@ int main(int argc, char *argv[]) {
 
   for (int i = 0; i < argc; i++) {
     if (conf.snippets.has_value()) {
-      for (auto pair: conf.snippets.value()) {
+      for (auto pair : conf.snippets.value()) {
         if (strcmp(argv[i], pair.first.c_str()) == 0) {
           std::cout << "Moving " << pair.first << '\n';
-          copy(pair.first, cwd + std::string("/") + std::string(std::filesystem::path(pair.second).filename()));
+          copy(pair.second,
+               cwd + std::string("/") +
+                   std::string(std::filesystem::path(pair.second).filename()));
+        }
+      }
+      if (conf.snippet_groups.has_value()) {
+        for (auto pair: conf.snippet_groups.value()) {
+          if (strcmp(argv[i], pair.first.c_str()) == 0) {
+            std::cout << "Moving " << pair.first << '\n';
+            for (auto second: pair.second) {
+              copy(second, cwd + std::string("/") + std::string(std::filesystem::path(second).filename()));
+            }
+          }
         }
       }
     }
