@@ -3,14 +3,13 @@
 #include <fstream>
 #include <iostream>
 #include <limits.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
-#include <sys/stat.h>
 
 #include "toml.h"
 
 #define CONFIG "/.config/snippet"
-
 
 void copy(std::string file, std::string deststr) {
   std::ifstream source(file, std::ios::binary);
@@ -36,10 +35,10 @@ int main(int argc, char *argv[]) {
       }
     }
   }
-  if(conf.snippet_groups.has_value()) {
+  if (conf.snippet_groups.has_value()) {
     auto snip_groups = conf.snippet_groups.value();
 
-    for (auto pair : snip_groups) {;
+    for (auto pair : snip_groups) {
       for (auto filepath : pair.second) {
         std::ifstream file(filepath);
         if (!file.is_open()) {
@@ -56,9 +55,6 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  std::string screen = home_var + CONFIG + "/Screen.java";
-  std::string runner = home_var + CONFIG + "/Runner.java";
-
   char cwd[PATH_MAX];
 
   if (getcwd(cwd, sizeof(cwd)) == nullptr) {
@@ -67,14 +63,13 @@ int main(int argc, char *argv[]) {
   }
 
   for (int i = 0; i < argc; i++) {
-    if (strcmp(argv[i], "screen") == 0) {
-      std::cout << "Moving screen\n";
-
-      copy(screen, cwd + std::string("/Screen.java"));
-    } else if (strcmp(argv[i], "runner") == 0) {
-      std::cout << "Moving runner\n";
-
-      copy(runner, cwd + std::string("/Runner.java"));
+    if (conf.snippets.has_value()) {
+      for (auto pair: conf.snippets.value()) {
+        if (strcmp(argv[i], pair.first.c_str()) == 0) {
+          std::cout << "Moving " << pair.first << '\n';
+          copy(pair.first, cwd + std::string("/") + std::string(std::filesystem::path(pair.second).filename()));
+        }
+      }
     }
   }
 
