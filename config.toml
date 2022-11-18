@@ -6,5 +6,12 @@ name2 = "/fake/file/path/2"
 snippetGroup = ['/fake/group/path', 
                 '/fake/group/path2', 
                 '/fake/group/path3']
+snippetGroup2 = ['/fake/gro/path',
+                '/fake/gro/path/2',
+                '/fake/gro/path/3']
+
+snippetGroup3 = ['/fake/gro/pa',
+                '/fake/gro/pah/2',
+                '/fke/gro/path/3']
 
 # Non inline comment

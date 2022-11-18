@@ -30,8 +30,12 @@ Config read(const std::string filename) {
     std::exit(1);
   }
   std::map<std::string, std::string> snippet_map;
+  std::map<std::string, std::vector<std::string>> group_map;
+  std::vector<std::string> group_vec;
+  std::string og_key;
   std::string file_str;
   std::string split;
+  std::string group_val;
   TomlConfigType config_type;
   int count = 0;
 
@@ -46,10 +50,9 @@ Config read(const std::string filename) {
       }
     }
 
-    if (file_str[0] == '#' || file_str.empty() || file_str[0] == '[' || config_type == TomlConfigType::SNIPPET_GROUPS) {
-      continue; 
+    if (file_str[0] == '#' || file_str.empty() || file_str[0] == '[') {
+      continue;
     }
-
 
     std::stringstream file_stream(file_str);
     std::string key, value;
@@ -69,18 +72,38 @@ Config read(const std::string filename) {
     std::getline(value_stream, split, '#');
 
     value = split;
-
     // Remove whitespace
     key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
     value.erase(std::remove_if(value.begin(), value.end(), isspace),
                 value.end());
+    
+    if (config_type == SNIPPET_GROUPS) {
+        if (value.find('[') != std::string::npos) {
+          og_key = key;
+        }
 
-    std::pair<std::string, std::string> pr(key, value);
-    snippet_map.insert(pr);
+        if (value.empty()) {
+          group_val = key;
+        } else {
+          group_val = value;
+        }
+        if (group_val.find(']') == std::string::npos) {
+            group_vec.push_back(group_val);
+        } else {
+          group_vec.push_back(group_val);
+          std::pair<std::string, std::vector<std::string>> pr(og_key, group_vec);
+          group_map.insert(pr);
+          group_vec.clear();
+        }
+    } else {
+      std::pair<std::string, std::string> pr(key, value);
+      snippet_map.insert(pr);
+    }
   }
 
   // Needed because std::optional doesn't like me
   config_map.snippets = snippet_map;
+  config_map.snippet_groups = group_map;
 
   return config_map;
 }

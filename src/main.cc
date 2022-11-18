@@ -22,6 +22,17 @@ void copy(std::string file, std::string deststr) {
 int main(int argc, char *argv[]) {
   auto conf = toml::read("config.toml");
 
+  for (auto pair: conf.snippets.value()) {
+    std::cout << pair.first << " : " << pair.second << '\n';
+  }
+
+  for (auto pair: conf.snippet_groups.value()) {
+    std::cout << pair.first << std::endl;
+    for(auto pai: pair.second) {
+      std::cout << pai << std::endl;
+    }
+  }
+
   std::string home_var = std::getenv("HOME");
 
   if (home_var.empty()) {
