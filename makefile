@@ -4,7 +4,6 @@ CFLAGS	:= -std=c++17 -Wall
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
-TEMPLATE_DIR :=	templates
 CONFIG_DIR := ~/.config/snippet/
 
 EXE		:= $(BIN_DIR)/snippet
@@ -23,11 +22,10 @@ install: $(EXE)
 
 debug: $(EXE)
 	$(info running ./bin/main through valgrind)
-	valgrind --tool=memcheck -s ./bin/main
+	valgrind --tool=memcheck -s $(EXE)
 
 $(EXE): $(OBJ) | $(BIN_DIR) $(TEMPLATE_DIR) $(CONFIG_DIR)
 	$(CC) $(CFLAGS) $^ -o $@
-	cp $(TEMPLATE_DIR)/* $(CONFIG_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc $(HEADER)| $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
