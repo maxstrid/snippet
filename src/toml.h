@@ -13,8 +13,7 @@ struct Config {
 };
 
 Config read(const std::string filename);
-
-void parse(std::map<std::string, std::string> &toml);
+void write(const std::string filename, const std::string content);
 } // namespace toml
 
 #endif // TOML_H_

@@ -9,7 +9,12 @@
 
 #include "toml.h"
 
-#define CONFIG "/.config/snippet"
+void check_file(const std::string filename) {
+  std::ifstream file(filename);
+  if (!file.is_open()) {
+    std::cerr << "unknown file: " << filename << '\n';
+  }
+}
 
 void copy(std::string file, std::string deststr) {
   std::ifstream source(file, std::ios::binary);
@@ -22,17 +27,24 @@ void copy(std::string file, std::string deststr) {
 }
 
 int main(int argc, char *argv[]) {
-  auto conf = toml::read("/home/uid/.config/snippet/config.toml");
+  std::string xdg_config = std::getenv("XDG_CONFIG_HOME");
+
+  if (xdg_config.empty()) {
+    xdg_config = std::getenv("HOME");
+    if (xdg_config.empty()) {
+      std::cerr << "No config directory found" << '\n';
+    } else {
+      xdg_config += "/.config";
+    }
+  }
+
+  auto conf = toml::read(xdg_config + "/snippet/config.toml");
 
   if (conf.snippets.has_value()) {
     auto snips = conf.snippets.value();
 
     for (auto pair : snips) {
-      std::ifstream file(pair.second);
-      if (!file.is_open()) {
-        std::cerr << "Uknown file: " << pair.second << '\n';
-        conf.snippets.value().erase(pair.first);
-      }
+      check_file(pair.second);
     }
   }
   if (conf.snippet_groups.has_value()) {
@@ -40,19 +52,9 @@ int main(int argc, char *argv[]) {
 
     for (auto pair : snip_groups) {
       for (auto filepath : pair.second) {
-        std::ifstream file(filepath);
-        if (!file.is_open()) {
-          std::cerr << "Uknown file: " << filepath << '\n';
-          conf.snippet_groups.value().erase(pair.first);
-        }
+        check_file(filepath);
       }
     }
-  }
-  std::string home_var = std::getenv("HOME");
-
-  if (home_var.empty()) {
-    std::cerr << "Couldn't find environemnt variable $HOME" << std::endl;
-    return 1;
   }
 
   char cwd[PATH_MAX];
@@ -73,11 +75,13 @@ int main(int argc, char *argv[]) {
         }
       }
       if (conf.snippet_groups.has_value()) {
-        for (auto pair: conf.snippet_groups.value()) {
+        for (auto pair : conf.snippet_groups.value()) {
           if (strcmp(argv[i], pair.first.c_str()) == 0) {
             std::cout << "Moving " << pair.first << '\n';
-            for (auto second: pair.second) {
-              copy(second, cwd + std::string("/") + std::string(std::filesystem::path(second).filename()));
+            for (auto second : pair.second) {
+              copy(second,
+                   cwd + std::string("/") +
+                       std::string(std::filesystem::path(second).filename()));
             }
           }
         }
