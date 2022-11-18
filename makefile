@@ -4,7 +4,6 @@ CFLAGS	:= -std=c++17 -Wall
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
-CONFIG_DIR := ~/.config/snippet/
 
 EXE		:= $(BIN_DIR)/snippet
 
@@ -24,17 +23,14 @@ debug: $(EXE)
 	$(info running ./bin/main through valgrind)
 	valgrind --tool=memcheck -s $(EXE)
 
-$(EXE): $(OBJ) | $(BIN_DIR) $(TEMPLATE_DIR) $(CONFIG_DIR)
+$(EXE): $(OBJ) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc $(HEADER)| $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-
-$(BIN_DIR) $(OBJ_DIR) $(CONFIG_DIR):
+$(BIN_DIR) $(OBJ_DIR):
 	mkdir -p $@
-
 
 clean:
 	@$(RM) -rv $(BIN_DIR) $(OBJ_DIR)
-	@$(RM) *.java
