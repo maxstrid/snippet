@@ -1,13 +1,16 @@
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <limits.h>
 #include <unistd.h>
 #include <vector>
+#include <sys/stat.h>
 
 #include "toml.h"
 
 #define CONFIG "/.config/snippet"
+
 
 void copy(std::string file, std::string deststr) {
   std::ifstream source(file, std::ios::binary);
@@ -22,17 +25,30 @@ void copy(std::string file, std::string deststr) {
 int main(int argc, char *argv[]) {
   auto conf = toml::read("config.toml");
 
-  for (auto pair: conf.snippets.value()) {
-    std::cout << pair.first << " : " << pair.second << '\n';
-  }
+  if (conf.snippets.has_value()) {
+    auto snips = conf.snippets.value();
 
-  for (auto pair: conf.snippet_groups.value()) {
-    std::cout << pair.first << std::endl;
-    for(auto pai: pair.second) {
-      std::cout << pai << std::endl;
+    for (auto pair : snips) {
+      std::ifstream file(pair.second);
+      if (!file.is_open()) {
+        std::cerr << "Uknown file: " << pair.second << '\n';
+        conf.snippets.value().erase(pair.first);
+      }
     }
   }
+  if(conf.snippet_groups.has_value()) {
+    auto snip_groups = conf.snippet_groups.value();
 
+    for (auto pair : snip_groups) {;
+      for (auto filepath : pair.second) {
+        std::ifstream file(filepath);
+        if (!file.is_open()) {
+          std::cerr << "Uknown file: " << filepath << '\n';
+          conf.snippet_groups.value().erase(pair.first);
+        }
+      }
+    }
+  }
   std::string home_var = std::getenv("HOME");
 
   if (home_var.empty()) {

@@ -13,6 +13,10 @@ enum TomlConfigType {
   SNIPPET_GROUPS,
 };
 
+void trim(std::string &str, const char token) {
+  str.erase(std::remove(str.begin(), str.end(), token), str.end());
+}
+
 Config read(const std::string filename) {
   Config config_map;
 
@@ -72,29 +76,39 @@ Config read(const std::string filename) {
     std::getline(value_stream, split, '#');
 
     value = split;
-    // Remove whitespace
-    key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
-    value.erase(std::remove_if(value.begin(), value.end(), isspace),
-                value.end());
-    
-    if (config_type == SNIPPET_GROUPS) {
-        if (value.find('[') != std::string::npos) {
-          og_key = key;
-        }
 
-        if (value.empty()) {
-          group_val = key;
-        } else {
-          group_val = value;
-        }
-        if (group_val.find(']') == std::string::npos) {
-            group_vec.push_back(group_val);
-        } else {
-          group_vec.push_back(group_val);
-          std::pair<std::string, std::vector<std::string>> pr(og_key, group_vec);
-          group_map.insert(pr);
-          group_vec.clear();
-        }
+    // Remove quotes
+    trim(value, '\'');
+    trim(value, '\"');
+    trim(key, '\'');
+    trim(key, '\"');
+    // Remove whitespace
+    trim(key, ' ');
+    trim(value, ' ');
+
+    if (config_type == SNIPPET_GROUPS) {
+      if (value.find('[') != std::string::npos) {
+        trim(value, '[');
+        og_key = key;
+      }
+
+      if (value.empty()) {
+        group_val = key;
+      } else {
+        group_val = value;
+      }
+
+      trim(group_val, ',');
+
+      if (group_val.find(']') == std::string::npos) {
+        group_vec.push_back(group_val);
+      } else {
+        trim(group_val, ']');
+        group_vec.push_back(group_val);
+        std::pair<std::string, std::vector<std::string>> pr(og_key, group_vec);
+        group_map.insert(pr);
+        group_vec.clear();
+      }
     } else {
       std::pair<std::string, std::string> pr(key, value);
       snippet_map.insert(pr);
