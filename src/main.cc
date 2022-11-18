@@ -3,9 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <limits.h>
-#include <sys/stat.h>
 #include <unistd.h>
-#include <vector>
 
 #include "toml.h"
 
