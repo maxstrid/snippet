@@ -2,4 +2,9 @@
 name1 = "/fake/file/path" # Inline comment
 name2 = "/fake/file/path/2"
 
+[snippets.groups]
+snippetGroup = ['/fake/group/path', 
+                '/fake/group/path2', 
+                '/fake/group/path3']
+
 # Non inline comment

@@ -3,9 +3,17 @@
 
 #include <iostream>
 #include <map>
+#include <optional>
+#include <map>
+#include <vector>
 
 namespace toml {
-std::map<std::string, std::string> read(const std::string filename);
+struct Config {
+  std::optional<std::map<std::string, std::string>> snippets;
+  std::optional<std::map<std::string, std::vector<std::string>>> snippet_groups;
+};
+
+Config read(const std::string filename);
 
 void parse(std::map<std::string, std::string> &toml);
 } // namespace toml
