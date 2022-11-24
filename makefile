@@ -1,28 +1,24 @@
-CC 		:= clang++
-CFLAGS	:= -std=c++17 -Wall
+CC := clang++
+CFLAGS := -std=c++17 -Wall -O2
 
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
 
-EXE		:= $(BIN_DIR)/snippet
+EXE := $(BIN_DIR)/snippet
 CONFIG_DIR := $(HOME)/.config/snippet
 
-SRC 	:= $(wildcard $(SRC_DIR)/*.cc)
-HEADER	:= $(wildcard $(SRC_DIR)/*.h)
+SRC := $(wildcard $(SRC_DIR)/*.cc)
+HEADER := $(wildcard $(SRC_DIR)/*.h)
 
-OBJ 	:= $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
+OBJ  := $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 
 all: $(EXE)
 
-.PHONY: all install debug clean
+.PHONY: all install clean
 
 install: $(EXE) $(CONFIG_DIR)
 	mv $(EXE) ~/.local/bin/
-
-debug: $(EXE)
-	$(info running ./bin/main through valgrind)
-	valgrind --tool=memcheck -s $(EXE)
 
 $(EXE): $(OBJ) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $^ -o $@
