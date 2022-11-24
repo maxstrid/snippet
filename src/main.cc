@@ -64,7 +64,8 @@ int main(int argc, char *argv[]) {
 
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "snip") == 0) {
-      if (!conf.snippets.has_value()) continue;
+      if (!conf.snippets.has_value())
+        continue;
 
       if (argc - 2 < i) {
         std::cerr << "not enough arguments passed\n";
@@ -73,29 +74,35 @@ int main(int argc, char *argv[]) {
 
       for (auto pair : conf.snippets.value()) {
         // This should be safe because we check the limits above
-        if (strcmp(argv[i + 1], pair.first.c_str()) != 0) continue;
-        
+        if (strcmp(argv[i + 1], pair.first.c_str()) != 0)
+          continue;
+
         std::cout << "moving " << pair.first << '\n';
-        copy(pair.second, cwd + std::string("/") + std::string(std::filesystem::path(pair.second).filename()));
+        copy(pair.second,
+             cwd + std::string("/") +
+                 std::string(std::filesystem::path(pair.second).filename()));
       }
-      } else if (strcmp(argv[i], "group") == 0) {
-        if (!conf.snippet_groups.has_value()) continue;
+    } else if (strcmp(argv[i], "group") == 0) {
+      if (!conf.snippet_groups.has_value())
+        continue;
 
-        if (argc - 2 < i) {
-          std::cerr << "not enough arguments passed\n";
-          return 1;
-        }
+      if (argc - 2 < i) {
+        std::cerr << "not enough arguments passed\n";
+        return 1;
+      }
 
-        for (auto pair : conf.snippet_groups.value()) {
-          if (strcmp(argv[i + 1], pair.first.c_str()) != 0) continue;
+      for (auto pair : conf.snippet_groups.value()) {
+        if (strcmp(argv[i + 1], pair.first.c_str()) != 0)
+          continue;
 
-          std::cout << "moving " << pair.first << '\n';
-          for (auto path : pair.second) {
-            copy(path, cwd + std::string("/") + std::string(std::filesystem::path(path).filename()));
-          }
+        std::cout << "moving " << pair.first << '\n';
+        for (auto path : pair.second) {
+          copy(path, cwd + std::string("/") +
+                         std::string(std::filesystem::path(path).filename()));
         }
       }
     }
+  }
 
   return 0;
 }
