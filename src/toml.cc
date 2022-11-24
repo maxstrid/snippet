@@ -7,120 +7,129 @@
 
 #include "toml.h"
 
-namespace toml {
 enum TomlConfigType {
   SNIPPETS,
   SNIPPET_GROUPS,
 };
 
-void trim(std::string &str, const char token) {
-  str.erase(std::remove(str.begin(), str.end(), token), str.end());
-}
-
-Config read(const std::string filename) {
-  Config config_map;
-
-  config_map.snippets = std::nullopt;
-  config_map.snippet_groups = std::nullopt;
-
-  if (std::filesystem::path(filename).extension() != ".toml") {
+Config::Config(const std::string filepath) {
+  if (std::filesystem::path(filepath).extension() != ".toml") {
     std::cerr << filename << ": file not toml\n";
     std::exit(1);
   }
 
-  std::ifstream file(filename, std::ios::binary);
+  std::ifstream file(filepath, std::ios::binary);
 
   if (!file.is_open()) {
     std::perror(filename.c_str());
     std::exit(1);
+  } else {
+    filename = filepath;
   }
-  std::map<std::string, std::string> snippet_map;
-  std::map<std::string, std::vector<std::string>> group_map;
-  std::vector<std::string> group_vec;
-  std::string og_key;
-  std::string file_str;
+
   std::string split;
-  std::string group_val;
+  std::string key, prev_key, value;
+
+  // Because of how optionals work I need to set
+  // the optional to this rather than accessing the optional
+  std::map<std::string, std::string> snippet_map;
+  std::map<std::string, std::vector<std::string>> snippet_group_map;
+  std::vector<std::string> group_vector;
+
   TomlConfigType config_type;
-  int count = 0;
 
-  while (std::getline(file, file_str)) {
-    if (file_str[0] == '[') {
-      std::string toml_conf_header = file_str.substr(1, file_str.size() - 2);
+  std::stringstream line_stream;
 
-      if (toml_conf_header == "snippets") {
-        config_type = TomlConfigType::SNIPPETS;
-      } else {
-        config_type = TomlConfigType::SNIPPET_GROUPS;
-      }
-    }
+  for (std::string line; std::getline(file, line);) {
+    line.erase(std::remove_if(line.begin(), line.end(), isspace),
+               line.end()); // Remove whitespace
 
-    if (file_str[0] == '#' || file_str.empty() || file_str[0] == '[') {
+    if (line.empty() || line[0] == '#') {
       continue;
     }
 
-    std::stringstream file_stream(file_str);
-    std::string key, value;
+    key = value = "";
 
-    count = 0;
-    while (std::getline(file_stream, split, '=')) {
-      if (count) {
-        value = split;
-      } else {
-        key = split;
+    if (line.at(0) == '[') {
+      if (line.substr(1, line.size() - 2) == "snippets") {
+        config_type = SNIPPETS;
+      } else if (line.substr(1, line.size() - 2) == "snippets.groups") {
+        config_type = SNIPPET_GROUPS;
       }
-      count++;
+
+      continue;
     }
 
-    // Remove inline comments from value
-    std::stringstream value_stream(value);
-    std::getline(value_stream, split, '#');
+    split = "";
+    line_stream.clear();
+    line_stream << line;
+    for (int i = 0; std::getline(line_stream, split, '='); i++) {
+      if (!i) { // If i is 0
+        if (line.find('=') == std::string::npos) {
+          value = split;
+        } else {
+          key = split;
+        }
+      } else {
+        value = split;
+      }
+    }
 
-    value = split;
+    // Cleaning quotes
+    value.erase(std::remove(value.begin(), value.end(), '"'), value.end());
+    value.erase(std::remove(value.begin(), value.end(), '\''), value.end());
 
-    // Remove quotes
-    trim(value, '\'');
-    trim(value, '\"');
-    trim(key, '\'');
-    trim(key, '\"');
-    // Remove whitespace
-    key.erase(std::remove_if(key.begin(), key.end(), isspace), key.end());
-    value.erase(std::remove_if(value.begin(), value.end(), isspace),
-                value.end());
+    // Removing inline comments
+    if (value.find('#') != std::string::npos) {
+      value = value.substr(0, value.find('#'));
+    }
 
-    if (config_type == SNIPPET_GROUPS) {
+    if (config_type == SNIPPETS) {
+      snippet_map.insert({key, value});
+    } else if (config_type == SNIPPET_GROUPS) {
+      if (value.find('[') != std::string::npos &&
+          value.find(']') != std::string::npos) {
+        value.erase(std::remove(value.begin(), value.end(), '['), value.end());
+        value.erase(std::remove(value.begin(), value.end(), ']'), value.end());
+
+        split = "";
+        line_stream.clear();
+        group_vector.clear();
+        for (line_stream << value; std::getline(line_stream, split, ',');) {
+          group_vector.push_back(split);
+        }
+        snippet_group_map.insert({key, group_vector});
+        group_vector.clear();
+        continue;
+      }
+
+      value.erase(std::remove(value.begin(), value.end(), ','), value.end());
+
       if (value.find('[') != std::string::npos) {
-        trim(value, '[');
-        og_key = key;
+        prev_key = key;
+        value.erase(std::remove(value.begin(), value.end(), '['), value.end());
       }
 
-      if (value.empty()) {
-        group_val = key;
+      if (value.find(']') == std::string::npos) {
+        group_vector.push_back(value);
       } else {
-        group_val = value;
+        value.erase(std::remove(value.begin(), value.end(), ']'), value.end());
+        group_vector.push_back(value);
+        snippet_group_map.insert({prev_key, group_vector});
+        group_vector.clear();
       }
-
-      trim(group_val, ',');
-
-      if (group_val.find(']') == std::string::npos) {
-        group_vec.push_back(group_val);
-      } else {
-        trim(group_val, ']');
-        group_vec.push_back(group_val);
-        std::pair<std::string, std::vector<std::string>> pr(og_key, group_vec);
-        group_map.insert(pr);
-        group_vec.clear();
-      }
-    } else {
-      std::pair<std::string, std::string> pr(key, value);
-      snippet_map.insert(pr);
     }
   }
 
-  // Needed because std::optional doesn't like me
-  config_map.snippets = snippet_map;
-  config_map.snippet_groups = group_map;
+  if (snippet_map.empty()) {
+    snippets = std::nullopt;
+  } else {
+    snippets = snippet_map;
+  }
 
-  return config_map;
+  if (snippet_group_map.empty()) {
+    snippet_groups = std::nullopt;
+  } else {
+    snippet_groups = snippet_group_map;
+  }
 }
-} // namespace toml

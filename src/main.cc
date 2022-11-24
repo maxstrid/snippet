@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  auto conf = toml::read(xdg_config + "/snippet/config.toml");
+  Config conf(xdg_config + "/snippet/config.toml");
 
   if (conf.snippets.has_value()) {
     auto snips = conf.snippets.value();

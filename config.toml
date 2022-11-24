@@ -14,4 +14,6 @@ snippetGroup3 = ['/fake/gro/pa',
                 '/fake/gro/pah/2',
                 '/fke/gro/path/3']
 
+snippetGroup4 = ['/fake', '/path', '/again']
+
 # Non inline comment
