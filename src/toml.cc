@@ -20,6 +20,7 @@ void trim(std::string &str, const char token) {
 Config read(const std::string filename) {
   Config config_map;
 
+  config_map.snippets = std::nullopt;
   config_map.snippet_groups = std::nullopt;
 
   if (std::filesystem::path(filename).extension() != ".toml") {
