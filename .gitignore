@@ -35,3 +35,6 @@
 obj
 bin
 .vscode
+
+# Nix
+result
