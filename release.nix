@@ -6,10 +6,10 @@ stdenv.mkDerivation {
     
     buildInputs = [ gcc tomlplusplus boost ];
 
-    buildPhase = "make";
+    buildPhase = "make release";
 
     installPhase = ''
-        mkdir -p $out/bin
-        cp snippet $out/bin/
+        mkdir -p $out/bin/release/
+        cp snippet $out/bin/release/
     '';
 }

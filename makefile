@@ -1,13 +1,11 @@
-CC := clang++ -std=c++17
+CC := g++ -std=c++17
 CFLAGS := -Wall -Wpedantic -Wextra -g
 
 SRC_DIR := src
 OBJ_DIR := obj
 
-# These are set to blank values b/c they're expected
-# to be set by the user/default.nix
-EXE ?=
-LDLIBS ?=
+EXE := snippet
+LDLIBS := -lboost_program_options -lboost_filesystem
 CONFIG_DIR := $(HOME)/.config/sippet
 
 SRC := $(wildcard $(SRC_DIR)/*.cc)
@@ -17,7 +15,10 @@ OBJ  := $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 
 all: $(EXE)
 
-.PHONY: all
+release: CFLAGS += -O3
+release: all
+
+.PHONY: all release
 
 $(EXE): $(OBJ)
 	$(CC) $(CFLAGS) $(LDLIBS) $^ -o $@
