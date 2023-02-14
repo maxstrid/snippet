@@ -2,15 +2,23 @@
 #include <fstream>
 #include <iostream>
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include "config.h"
 
 namespace boostpo = boost::program_options;
-namespace boostfs = boost::filesystem;
 
 using std::string;
+namespace fs = std::filesystem;
+
+void copy_snippet(const string &snippet_path) {
+  const string filename = string(fs::path(snippet_path).filename());
+
+  std::cout << "Moving " << filename << '\n';
+
+  fs::copy(fs::path(snippet_path),
+           fs::path(string(fs::current_path()) + '/' + filename));
+}
 
 bool file_exists(const string &filename) {
   std::ifstream file(filename);
@@ -67,14 +75,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (file_exists(snippet)) {
-      const string filename = string(std::filesystem::path(snippet).filename());
-
-      boostfs::copy_file(
-          snippet, string(std::filesystem::current_path()) + '/' + filename,
-          boostfs::copy_option::none);
-
-      std::cout << "Moving " << filename << '\n';
-
+      copy_snippet(snippet);
     } else {
       std::cerr << "'" << snippet << "' not found, skipping.\n";
     }
@@ -97,14 +98,7 @@ int main(int argc, char *argv[]) {
       string snippet = snippet_path.value_or("");
 
       if (file_exists(snippet)) {
-        const string filename =
-            string(std::filesystem::path(snippet).filename());
-
-        boostfs::copy_file(
-            snippet, string(std::filesystem::current_path()) + '/' + filename,
-            boostfs::copy_option::none);
-
-        std::cout << "Moving " << filename << '\n';
+        copy_snippet(snippet);
       } else {
         std::cerr << "'" << snippet << "' not found, skipping.\n";
       }

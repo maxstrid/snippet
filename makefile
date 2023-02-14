@@ -5,7 +5,7 @@ SRC_DIR := src
 OBJ_DIR := obj
 
 EXE := snippet
-LDLIBS := -lboost_program_options -lboost_filesystem
+LDLIBS := -lboost_program_options
 CONFIG_DIR := $(HOME)/.config/sippet
 
 SRC := $(wildcard $(SRC_DIR)/*.cc)
