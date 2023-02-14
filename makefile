@@ -15,7 +15,7 @@ OBJ  := $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 
 all: $(EXE)
 
-release: CFLAGS += -O3
+release: CFLAGS := -O3
 release: all
 
 .PHONY: all release
