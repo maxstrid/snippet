@@ -6,12 +6,6 @@
 #include <sstream>
 #include <toml++/toml.h>
 
-#ifdef _WIN32
-#define WIN true
-#else
-#define WIN false
-#endif
-
 Config::Config(const std::string &filename) : filename_(filename) {
   try {
     table_ = toml::parse_file(filename);
@@ -27,19 +21,13 @@ Config::Config(const std::string &filename) : filename_(filename) {
 }
 
 std::string Config::get_config() {
-  if (WIN) {
-    std::string appdata = std::string(std::getenv("APPDATA"));
+  std::string xdg_config_home = std::string(std::getenv("XDG_CONFIG_HOME"));
 
-    return appdata + std::string("/Snippet/config.toml");
-  } else {
-    std::string xdg_config_home = std::string(std::getenv("XDG_CONFIG_HOME"));
+  if (xdg_config_home.empty()) {
+    std::string home = std::string(std::getenv("HOME"));
 
-    if (xdg_config_home.empty()) {
-      std::string home = std::string(std::getenv("HOME"));
-
-      xdg_config_home = home + std::string("/.config");
-    }
-
-    return xdg_config_home + std::string("/snippet/config.toml");
+    xdg_config_home = home + std::string("/.config");
   }
+
+  return xdg_config_home + std::string("/snippet/config.toml");
 }
