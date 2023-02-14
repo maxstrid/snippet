@@ -19,7 +19,7 @@ nix-build
 Building for release requires
 
 ```bash
-nix-build release.nix
+nix-build --args release true
 ```
 
 ### With Make

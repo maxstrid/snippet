@@ -1,4 +1,5 @@
 with import <nixpkgs> {};
+{ release ? false }:
 
 stdenv.mkDerivation {
     name = "snippet";
@@ -6,7 +7,7 @@ stdenv.mkDerivation {
     
     buildInputs = [ gcc tomlplusplus boost ];
 
-    buildPhase = "make";
+    buildPhase = if release then "make release" else "make";
 
     installPhase = ''
         mkdir -p $out/bin
