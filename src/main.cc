@@ -1,9 +1,6 @@
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <optional>
-#include <vector>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
