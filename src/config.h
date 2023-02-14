@@ -1,7 +1,6 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#include <iostream>
 #include <toml++/toml.h>
 
 class Config {
