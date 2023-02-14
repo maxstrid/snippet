@@ -1,12 +1,13 @@
-CC := clang++
-CFLAGS := -std=c++17 -Wall -O2
+CC := clang++ -std=c++17
+CFLAGS := -Wall -Wpedantic -Wextra -g
 
 SRC_DIR := src
 OBJ_DIR := obj
 
-# Set to main b/c if EXE isn't set by default.nix
-# something is very very wrong.
-EXE ?= main
+# These are set to blank values b/c they're expected
+# to be set by the user/default.nix
+EXE ?=
+LDLIBS ?=
 CONFIG_DIR := $(HOME)/.config/sippet
 
 SRC := $(wildcard $(SRC_DIR)/*.cc)
@@ -19,7 +20,7 @@ all: $(EXE)
 .PHONY: all
 
 $(EXE): $(OBJ)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $(LDLIBS) $^ -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc $(HEADER)| $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@

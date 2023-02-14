@@ -1,108 +1,119 @@
-#include <cstring>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <limits.h>
-#include <unistd.h>
+#include <optional>
+#include <vector>
 
-#include "toml.h"
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
-void check_file(const std::string filename) {
+#include "config.h"
+
+namespace boostpo = boost::program_options;
+namespace boostfs = boost::filesystem;
+
+using std::string;
+
+bool file_exists(const string &filename) {
   std::ifstream file(filename);
-  if (!file.is_open()) {
-    std::cerr << "unknown file: " << filename << '\n';
-  }
-}
-
-void copy(std::string file, std::string deststr) {
-  std::ifstream source(file, std::ios::binary);
-  std::ofstream dest(deststr, std::ios::binary);
-
-  dest << source.rdbuf();
-
-  source.close();
-  dest.close();
+  return file.good();
 }
 
 int main(int argc, char *argv[]) {
-  std::string xdg_config = std::getenv("XDG_CONFIG_HOME");
+  boostpo::options_description desc("Allowed Options");
+  desc.add_options()("help", "give help message")(
+      "config", boostpo::value<string>(), "set custom config file location")(
+      "snippet,s", boostpo::value<string>(), "copy snippet to your location")(
+      "group,g", boostpo::value<string>(), "copy group to your location");
 
-  if (xdg_config.empty()) {
-    xdg_config = std::getenv("HOME");
-    if (xdg_config.empty()) {
-      std::cerr << "No config directory found" << '\n';
-    } else {
-      xdg_config += "/.config";
-    }
+  boostpo::variables_map v_map;
+
+  boostpo::store(boostpo::parse_command_line(argc, argv, desc), v_map);
+  boostpo::notify(v_map);
+
+  if (v_map.count("help")) {
+    std::cout << desc << '\n';
+    return 0;
   }
 
-  Config conf(xdg_config + "/snippet/config.toml");
+  string filename;
 
-  if (conf.snippets.has_value()) {
-    auto snips = conf.snippets.value();
+  if (v_map.count("config")) {
+    filename = v_map["config"].as<string>();
+  } else {
+    string config = std::getenv("XDG_CONFIG_HOME");
 
-    for (auto pair : snips) {
-      check_file(pair.second);
+    if (config.empty()) {
+      config = string(std::getenv("HOME")) + string("/.config");
     }
-  }
-  if (conf.snippet_groups.has_value()) {
-    auto snip_groups = conf.snippet_groups.value();
 
-    for (auto pair : snip_groups) {
-      for (auto filepath : pair.second) {
-        check_file(filepath);
-      }
-    }
+    filename = string(config) + string("/snippet/config.toml");
   }
 
-  char cwd[PATH_MAX];
-
-  if (getcwd(cwd, sizeof(cwd)) == nullptr) {
-    std::cerr << "getcwd() error\n";
+  if (!file_exists(filename)) {
+    std::cerr << "Couldn't find file " << filename << '\n';
     return 1;
   }
 
-  for (int i = 0; i < argc; i++) {
-    if (strcmp(argv[i], "snip") == 0) {
-      if (!conf.snippets.has_value())
-        continue;
+  Config conf(filename);
 
-      if (argc - 2 < i) {
-        std::cerr << "not enough arguments passed\n";
-        return 1;
-      }
+  const auto table = conf.table();
 
-      for (auto pair : conf.snippets.value()) {
-        // This should be safe because we check the limits above
-        if (strcmp(argv[i + 1], pair.first.c_str()) != 0)
-          continue;
+  if (v_map.count("snippet")) {
+    const string snippet_name = v_map["snippet"].as<string>();
 
-        std::cout << "moving " << pair.first << '\n';
-        copy(pair.second,
-             cwd + std::string("/") +
-                 std::string(std::filesystem::path(pair.second).filename()));
-      }
-    } else if (strcmp(argv[i], "group") == 0) {
-      if (!conf.snippet_groups.has_value())
-        continue;
+    const string snippet = table["snippets"][snippet_name].value_or("");
 
-      if (argc - 2 < i) {
-        std::cerr << "not enough arguments passed\n";
-        return 1;
-      }
+    if (snippet.empty()) {
+      std::cerr << "snippet '" << snippet_name << "' not found in " << filename
+                << '\n';
 
-      for (auto pair : conf.snippet_groups.value()) {
-        if (strcmp(argv[i + 1], pair.first.c_str()) != 0)
-          continue;
+      return 1;
+    }
 
-        std::cout << "moving " << pair.first << '\n';
-        for (auto path : pair.second) {
-          copy(path, cwd + std::string("/") +
-                         std::string(std::filesystem::path(path).filename()));
-        }
-      }
+    if (file_exists(snippet)) {
+      const string filename = string(std::filesystem::path(snippet).filename());
+
+      boostfs::copy_file(
+          snippet, string(std::filesystem::current_path()) + '/' + filename,
+          boostfs::copy_option::none);
+
+      std::cout << "Moving " << filename << '\n';
+
+    } else {
+      std::cerr << "'" << snippet << "' not found, skipping.\n";
     }
   }
 
-  return 0;
+  if (v_map.count("group")) {
+    const string group_name = v_map["group"].as<string>();
+
+    const auto group = table["snippets"]["groups"][group_name];
+
+    if (!group.is_array()) {
+      std::cerr << "snippet group '" << group_name
+                << "' not found or not an array in " << filename << '\n';
+
+      return 1;
+    }
+    const auto snippets = group.as_array();
+
+    for (auto &&snippet_path : *snippets) {
+      string snippet = snippet_path.value_or("");
+
+      if (file_exists(snippet)) {
+        const string filename =
+            string(std::filesystem::path(snippet).filename());
+
+        boostfs::copy_file(
+            snippet, string(std::filesystem::current_path()) + '/' + filename,
+            boostfs::copy_option::none);
+
+        std::cout << "Moving " << filename << '\n';
+      } else {
+        std::cerr << "'" << snippet << "' not found, skipping.\n";
+      }
+    }
+  }
 }
