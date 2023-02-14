@@ -11,6 +11,8 @@ public:
   // TOOD: Allow the user to add things to the config
   void add();
 
+  static std::string get_config();
+
   toml::table table() { return table_; };
 
 private:

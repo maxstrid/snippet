@@ -1,9 +1,16 @@
 #include "config.h"
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <toml++/toml.h>
+
+#ifdef _WIN32
+#define WIN true
+#else
+#define WIN false
+#endif
 
 Config::Config(const std::string &filename) : filename_(filename) {
   try {
@@ -16,5 +23,23 @@ Config::Config(const std::string &filename) : filename_(filename) {
     // there really isn't a better way to do it from a
     // constructor as far as I know.
     std::exit(1);
+  }
+}
+
+std::string Config::get_config() {
+  if (WIN) {
+    std::string appdata = std::string(std::getenv("APPDATA"));
+
+    return appdata + std::string("/Snippet/config.toml");
+  } else {
+    std::string xdg_config_home = std::string(std::getenv("XDG_CONFIG_HOME"));
+
+    if (xdg_config_home.empty()) {
+      std::string home = std::string(std::getenv("HOME"));
+
+      xdg_config_home = home + std::string("/.config");
+    }
+
+    return xdg_config_home + std::string("/snippet/config.toml");
   }
 }

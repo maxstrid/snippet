@@ -18,35 +18,32 @@ bool file_exists(const string &filename) {
 }
 
 int main(int argc, char *argv[]) {
+  std::string config_location = Config::get_config();
+
   boostpo::options_description desc("Allowed Options");
   desc.add_options()("help", "give help message")(
-      "config", boostpo::value<string>(), "set custom config file location")(
-      "snippet,s", boostpo::value<string>(), "copy snippet to your location")(
+      "config,c", boostpo::value<string>()->default_value(config_location),
+      "set custom config file location")("snippet,s", boostpo::value<string>(),
+                                         "copy snippet to your location")(
       "group,g", boostpo::value<string>(), "copy group to your location");
 
   boostpo::variables_map v_map;
 
   boostpo::store(boostpo::parse_command_line(argc, argv, desc), v_map);
-  boostpo::notify(v_map);
+
+  try {
+    boostpo::notify(v_map);
+  } catch (std::exception &e) {
+    std::cerr << "Error: " << e.what() << "\n";
+    return 1;
+  }
 
   if (v_map.count("help")) {
     std::cout << desc << '\n';
     return 0;
   }
 
-  string filename;
-
-  if (v_map.count("config")) {
-    filename = v_map["config"].as<string>();
-  } else {
-    string config = std::getenv("XDG_CONFIG_HOME");
-
-    if (config.empty()) {
-      config = string(std::getenv("HOME")) + string("/.config");
-    }
-
-    filename = string(config) + string("/snippet/config.toml");
-  }
+  string filename = v_map["config"].as<string>();
 
   if (!file_exists(filename)) {
     std::cerr << "Couldn't find file " << filename << '\n';
