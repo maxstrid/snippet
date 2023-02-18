@@ -1,16 +1,33 @@
 with import <nixpkgs> {};
 { release ? false }:
 
+let
+    cc="clang";
+    ldflags="-lboost_program_options";
+in
 stdenv.mkDerivation {
     name = "snippet";
     src = ./.;
-    
-    buildInputs = [ gcc tomlplusplus boost ];
 
-    buildPhase = if release then "make release" else "make";
+    nativeBuildInputs = [
+        meson
+        ninja
+        clang
+        pkg-config
+    ];
+
+    buildInputs = [ tomlplusplus boost ];
+
+    configurePhase =
+        if release then
+            "CC='${cc}' LDFLAGS='${ldflags}' meson setup build --buildtype release"
+        else
+            "CC='${cc}' LDFLAGS='${ldflags}' meson setup build";
+
+    buildPhase = "ninja -C build";
 
     installPhase = ''
         mkdir -p $out/bin
-        cp snippet $out/bin/
+        cp build/snippet $out/bin/
     '';
 }

@@ -1,47 +1,23 @@
 # snippet
 
 - [Building](#building)
-    - [With Nix](#with-nix)
-    - [With Make](#with-make)
 - [Configuration](#configuration)
 - [TODO](TODO.md)
 
 ## Building
 
-### With Nix
+Building requires
+* boost
+* toml++
 
-Building with nix can be done by running
-
+and can be built with
 ```bash
-nix-build
+$ meson setup build
+$ ninja -C build
 ```
 
-Building for release requires
-
-```bash
-nix-build --args release true
-```
-
-### With Make
-
-Building with make requires
-
-* Boost
-* Toml++
-
-Both installed to your include path. Then
-
-```bash
-make
-```
-
-or 
-
-```bash
-make release
-```
-
-can be ran depending on your needs.
+Alternatively `nix-build` can be ran to auto-download dependancies and build.
+`nix-build --arg release true` can be ran to build with release optimizations.
 
 ## Configuration
 
