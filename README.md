@@ -16,7 +16,8 @@ $ meson setup build
 $ ninja -C build
 ```
 
-Alternatively `nix-build` can be ran to auto-download dependancies and build.
+Alternatively [nix](https://nixos.org/) can be used.
+`nix-build` can be ran to auto-download dependancies and build.
 `nix-build --arg release true` can be ran to build with release optimizations.
 
 ## Configuration
