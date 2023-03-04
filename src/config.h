@@ -1,5 +1,4 @@
-#ifndef CONFIG_H_
-#define CONFIG_H_
+#pragma once
 
 #include <toml++/toml.h>
 
@@ -18,5 +17,3 @@ private:
   std::string filename_;
   toml::table table_;
 };
-
-#endif // CONFIG_H_
