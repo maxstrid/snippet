@@ -38,3 +38,6 @@ bin
 
 # Nix
 result
+
+# Lsp
+.ccls-cache/
